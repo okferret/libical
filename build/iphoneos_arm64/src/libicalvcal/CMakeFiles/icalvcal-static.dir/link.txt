@@ -1,0 +1,2 @@
+/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/ar qc ../../lib/libicalvcal.a "CMakeFiles/icalvcal-static.dir/icalvcal.c.o" "CMakeFiles/icalvcal-static.dir/vobject.c.o" "CMakeFiles/icalvcal-static.dir/vcaltmp.c.o" "CMakeFiles/icalvcal-static.dir/vcc.c.o"
+/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/ranlib ../../lib/libicalvcal.a

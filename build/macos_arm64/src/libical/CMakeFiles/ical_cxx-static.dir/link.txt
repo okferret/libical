@@ -1,0 +1,2 @@
+/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/ar qc ../../lib/libical_cxx.a "CMakeFiles/ical_cxx-static.dir/icalparameter_cxx.cpp.o" "CMakeFiles/ical_cxx-static.dir/icalproperty_cxx.cpp.o" "CMakeFiles/ical_cxx-static.dir/icalvalue_cxx.cpp.o" "CMakeFiles/ical_cxx-static.dir/vcomponent_cxx.cpp.o"
+/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/ranlib ../../lib/libical_cxx.a
