@@ -101,12 +101,13 @@ function safe_copy {
     fi
 }
 
-# Framework构建函数
+# Framework构建函数（添加 platform 参数和 Info.plist 生成）
 function create_framework {
     local framework_dir=$1
     local lib_path=$2
     local headers_dir=$3
-    
+    local platform=$4
+
     create_dir "${framework_dir}/Headers"
     create_dir "${framework_dir}/Modules"
 
@@ -140,6 +141,58 @@ module ${FRAMEWORK_NAME} {
     export *
     link "${FRAMEWORK_NAME}"
 }
+EOF
+
+    # 生成 Info.plist（根据平台类型设置参数）
+    log "INFO" "Generating Info.plist for ${platform}"
+    local PLATFORM_NAME
+    local MIN_OS_VERSION
+
+    case "$platform" in
+        iphoneos)
+            PLATFORM_NAME="iPhoneOS"
+            MIN_OS_VERSION="${DEPLOYMENT_TARGET_IOS}"
+            ;;
+        iphonesimulator)
+            PLATFORM_NAME="iPhoneSimulator"
+            MIN_OS_VERSION="${DEPLOYMENT_TARGET_IOS}"
+            ;;
+        macos)
+            PLATFORM_NAME="MacOSX"
+            MIN_OS_VERSION="${DEPLOYMENT_TARGET_MACOS}"
+            ;;
+        *) handle_error "Unsupported platform: $platform" ;;
+    esac
+
+    cat > "${framework_dir}/Info.plist" <<EOF
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+    <key>CFBundleDevelopmentRegion</key>
+    <string>en</string>
+    <key>CFBundleExecutable</key>
+    <string>${FRAMEWORK_NAME}</string>
+    <key>CFBundleIdentifier</key>
+    <string>org.libical.${FRAMEWORK_NAME}</string>
+    <key>CFBundleInfoDictionaryVersion</key>
+    <string>6.0</string>
+    <key>CFBundleName</key>
+    <string>${FRAMEWORK_NAME}</string>
+    <key>CFBundlePackageType</key>
+    <string>FMWK</string>
+    <key>CFBundleShortVersionString</key>
+    <string>1.0.0</string>
+    <key>CFBundleVersion</key>
+    <string>1</string>
+    <key>CFBundleSupportedPlatforms</key>
+    <array>
+        <string>${PLATFORM_NAME}</string>
+    </array>
+    <key>MinimumOSVersion</key>
+    <string>${MIN_OS_VERSION}</string>
+</dict>
+</plist>
 EOF
 }
 
@@ -188,12 +241,13 @@ function build_arch {
         handle_error "Header file missing after install: ${header_file}"
     fi
 
-    # 创建framework
+    # 创建framework（添加 platform 参数）
     local framework_dir="${OUTPUT_DIR}/${platform}.${arch}/${FRAMEWORK_NAME}.framework"
     create_framework \
         "${framework_dir}" \
         "${OUTPUT_DIR}/${platform}_${arch}/lib/${FRAMEWORK_NAME}.a" \
-        "${OUTPUT_DIR}/${platform}_${arch}/include/${FRAMEWORK_NAME}"
+        "${OUTPUT_DIR}/${platform}_${arch}/include/${FRAMEWORK_NAME}" \
+        "${platform}"
 }
 
 # 主构建流程
@@ -227,12 +281,13 @@ MERGED_HEADER_DIR="${MERGED_SIMULATOR_DIR}/include/${FRAMEWORK_NAME}"
 create_dir "${MERGED_HEADER_DIR}"
 safe_copy "${SIMULATOR_HEADER_SRC}" "${MERGED_HEADER_DIR}"
 
-# 创建合并后的framework
+# 创建合并后的framework（添加 platform 参数）
 SIMULATOR_FRAMEWORK_DIR="${OUTPUT_DIR}/iphonesimulator.merged/${FRAMEWORK_NAME}.framework"
 create_framework \
     "${SIMULATOR_FRAMEWORK_DIR}" \
     "${MERGED_SIMULATOR_DIR}/lib/${FRAMEWORK_NAME}.a" \
-    "${MERGED_HEADER_DIR}"
+    "${MERGED_HEADER_DIR}" \
+    "iphonesimulator"
 
 # 合并 macOS 库
 log "INFO" "Merging macOS libraries..."
@@ -253,12 +308,13 @@ MERGED_MACOS_HEADER_DIR="${MERGED_MACOS_DIR}/include/${FRAMEWORK_NAME}"
 create_dir "${MERGED_MACOS_HEADER_DIR}"
 safe_copy "${MACOS_HEADER_SRC}" "${MERGED_MACOS_HEADER_DIR}"
 
-# 创建合并后的 macOS framework
+# 创建合并后的 macOS framework（添加 platform 参数）
 MACOS_FRAMEWORK_DIR="${OUTPUT_DIR}/macos.merged/${FRAMEWORK_NAME}.framework"
 create_framework \
     "${MACOS_FRAMEWORK_DIR}" \
     "${MERGED_MACOS_DIR}/lib/${FRAMEWORK_NAME}.a" \
-    "${MERGED_MACOS_HEADER_DIR}"
+    "${MERGED_MACOS_HEADER_DIR}" \
+    "macos"
 
 # 创建 XCFramework
 log "INFO" "Creating XCFramework..."
