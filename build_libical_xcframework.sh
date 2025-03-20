@@ -334,3 +334,16 @@ echo -e "\033[34m${XCFRAMEWORK_PATH}\033[0m"
 
 # 打开输出目录
 open "${OUTPUT_DIR}"
+
+# 清理临时文件
+log "INFO" "Cleaning up temporary files..."
+if [[ -d "${BUILD_DIR}" ]]; then
+    rm -rf "${BUILD_DIR}"
+    log "INFO" "Removed build directory: ${BUILD_DIR}"
+fi
+
+# 清理除 libical.xcframework 之外的其他文件
+find "${OUTPUT_DIR}" -mindepth 1 -maxdepth 1 ! -name "libical.xcframework" -exec rm -rf {} +
+log "INFO" "Cleaned up output directory, only libical.xcframework remains."
+
+log "INFO" "Cleanup complete!"
