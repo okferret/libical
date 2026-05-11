@@ -2,18 +2,8 @@
  FILE: icalgaugeimpl.h
  CREATOR: eric 09 Aug 2000
 
- (C) COPYRIGHT 2000, Eric Busboom <eric@civicknowledge.com>
-
- This library is free software; you can redistribute it and/or modify
- it under the terms of either:
-
-    The LGPL as published by the Free Software Foundation, version
-    2.1, available at: https://www.gnu.org/licenses/lgpl-2.1.html
-
- Or:
-
-    The Mozilla Public License Version 2.0. You may obtain a copy of
-    the License at https://www.mozilla.org/MPL/
+ SPDX-FileCopyrightText: 2000, Eric Busboom <eric@civicknowledge.com>
+ SPDX-License-Identifier: LGPL-2.1-only OR MPL-2.0
 ======================================================================*/
 
 #ifndef ICALGAUGEIMPL_H
@@ -42,8 +32,7 @@ typedef enum icalgaugelogic
     ICALGAUGELOGIC_OR
 } icalgaugelogic;
 
-struct icalgauge_where
-{
+struct icalgauge_where {
     icalgaugelogic logic;
     icalcomponent_kind comp;
     icalproperty_kind prop;
@@ -51,11 +40,11 @@ struct icalgauge_where
     char *value;
 };
 
-struct icalgauge_impl
-{
-    pvl_list select;     /**< Of icalgaugecompare, using only prop and comp fields*/
-    pvl_list from;       /**< List of component_kinds, as integers */
-    pvl_list where;      /**< List of icalgaugecompare */
+struct icalpvl_list_t;
+struct icalgauge_impl {
+    struct icalpvl_list_t *select; /**< Of icalgaugecompare, using only prop and comp fields*/
+    struct icalpvl_list_t *from;   /**< List of component_kinds, as integers */
+    struct icalpvl_list_t *where;  /**< List of icalgaugecompare */
     int expand;
 };
 

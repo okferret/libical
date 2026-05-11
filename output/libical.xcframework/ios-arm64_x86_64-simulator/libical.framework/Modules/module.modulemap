@@ -1,5 +1,5 @@
-module libical {
-    umbrella header "Headers/libical.h"
+framework module libical {
+    umbrella header "libical.h"
     export *
-    link "libical"
+    module * { export * }
 }

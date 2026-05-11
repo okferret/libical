@@ -1,20 +1,15 @@
 /*======================================================================
- FILE: icalvalue.h
+ FILE: icalderivedvalue.h
  CREATOR: eric 20 March 1999
 
- (C) COPYRIGHT 1999, Eric Busboom  <eric@civicknowledge.com>
-
- This library is free software; you can redistribute it and/or modify
- it under the terms of either:
-
-    The LGPL as published by the Free Software Foundation, version
-    2.1, available at: https://www.gnu.org/licenses/lgpl-2.1.html
-
- Or:
-
-    The Mozilla Public License Version 2.0. You may obtain a copy of
-    the License at https://www.mozilla.org/MPL/
+ SPDX-FileCopyrightText: 1999, Eric Busboom  <eric@civicknowledge.com>
+ SPDX-License-Identifier: LGPL-2.1-only OR MPL-2.0
 ======================================================================*/
+
+/**
+ * @file icalderivedvalue.h
+ * @brief ICalendar values.
+ */
 
 #ifndef ICALDERIVEDVALUE_H
 #define ICALDERIVEDVALUE_H
@@ -30,9 +25,9 @@ LIBICAL_ICAL_EXPORT void icalvalue_set_x(icalvalue *value, const char *v);
 LIBICAL_ICAL_EXPORT icalvalue *icalvalue_new_x(const char *v);
 LIBICAL_ICAL_EXPORT const char *icalvalue_get_x(const icalvalue *value);
 
-LIBICAL_ICAL_EXPORT icalvalue *icalvalue_new_recur(struct icalrecurrencetype v);
-LIBICAL_ICAL_EXPORT void icalvalue_set_recur(icalvalue *value, struct icalrecurrencetype v);
-LIBICAL_ICAL_EXPORT struct icalrecurrencetype icalvalue_get_recur(const icalvalue *value);
+LIBICAL_ICAL_EXPORT icalvalue *icalvalue_new_recur(struct icalrecurrencetype *recur);
+LIBICAL_ICAL_EXPORT void icalvalue_set_recur(icalvalue *value, struct icalrecurrencetype *recur);
+LIBICAL_ICAL_EXPORT struct icalrecurrencetype *icalvalue_get_recur(const icalvalue *value);
 
 LIBICAL_ICAL_EXPORT icalvalue *icalvalue_new_trigger(struct icaltriggertype v);
 LIBICAL_ICAL_EXPORT void icalvalue_set_trigger(icalvalue *value, struct icaltriggertype v);
@@ -51,7 +46,7 @@ LIBICAL_ICAL_EXPORT icalvalue *icalvalue_new_datetime(struct icaltimetype v);
 
 /**
  * Returns the icaltimetype corresponding to the specified icalvalue.
- * @param a pointer to an icalvalue.
+ * @param value pointer to an icalvalue.
  * @returns the icaltimetype as datetime.
  * @since 3.0
  */
@@ -87,7 +82,21 @@ LIBICAL_ICAL_EXPORT icalvalue *icalvalue_new_binary(const char *v);
 LIBICAL_ICAL_EXPORT void icalvalue_set_binary(icalvalue *value, const char *v);
 LIBICAL_ICAL_EXPORT const char *icalvalue_get_binary(const icalvalue *value);
 
-LIBICAL_ICAL_EXPORT void icalvalue_reset_kind(icalvalue *value);
+#define icalvalue_new_link icalvalue_new_uri
+#define icalvalue_set_link icalvalue_set_uri
+#define icalvalue_get_link icalvalue_get_uri
+
+#define icalvalue_new_relatedto icalvalue_new_text
+#define icalvalue_set_relatedto icalvalue_set_text
+#define icalvalue_get_relatedto icalvalue_get_text
+
+LIBICAL_ICAL_EXPORT icalvalue *icalvalue_new_requeststatus(struct icalreqstattype v);
+LIBICAL_ICAL_EXPORT struct icalreqstattype icalvalue_get_requeststatus(const icalvalue *value);
+LIBICAL_ICAL_EXPORT void icalvalue_set_requeststatus(icalvalue *value, struct icalreqstattype v);
+
+LIBICAL_ICAL_EXPORT icalvalue *icalvalue_new_color(const char *v);
+LIBICAL_ICAL_EXPORT void icalvalue_set_color(icalvalue *value, const char *v);
+LIBICAL_ICAL_EXPORT const char *icalvalue_get_color(const icalvalue *value);
 
 typedef enum icalvalue_kind {
    ICAL_ANY_VALUE=5000,
@@ -100,6 +109,7 @@ typedef enum icalvalue_kind {
     ICAL_CARLEVEL_VALUE=5016,
     ICAL_CLASS_VALUE=5019,
     ICAL_CMD_VALUE=5010,
+    ICAL_COLOR_VALUE=5044,
     ICAL_DATE_VALUE=5002,
     ICAL_DATETIME_VALUE=5028,
     ICAL_DATETIMEDATE_VALUE=5036,
@@ -108,26 +118,33 @@ typedef enum icalvalue_kind {
     ICAL_FLOAT_VALUE=5013,
     ICAL_GEO_VALUE=5004,
     ICAL_INTEGER_VALUE=5017,
+    ICAL_LINK_VALUE=5042,
     ICAL_METHOD_VALUE=5030,
+    ICAL_PARTICIPANTTYPE_VALUE=5037,
     ICAL_PERIOD_VALUE=5014,
     ICAL_POLLCOMPLETION_VALUE=5034,
     ICAL_POLLMODE_VALUE=5033,
+    ICAL_PROXIMITY_VALUE=5039,
     ICAL_QUERY_VALUE=5001,
     ICAL_QUERYLEVEL_VALUE=5012,
     ICAL_RECUR_VALUE=5026,
+    ICAL_RELATEDTO_VALUE=5043,
     ICAL_REQUESTSTATUS_VALUE=5009,
+    ICAL_RESOURCETYPE_VALUE=5038,
     ICAL_STATUS_VALUE=5005,
     ICAL_STRING_VALUE=5007,
     ICAL_TASKMODE_VALUE=5035,
     ICAL_TEXT_VALUE=5008,
     ICAL_TRANSP_VALUE=5006,
     ICAL_TRIGGER_VALUE=5024,
+    ICAL_UID_VALUE=5040,
     ICAL_URI_VALUE=5018,
     ICAL_UTCOFFSET_VALUE=5029,
     ICAL_X_VALUE=5022,
     ICAL_XLICCLASS_VALUE=5025,
+    ICAL_XMLREFERENCE_VALUE=5041,
    ICAL_NO_VALUE=5031
-} icalvalue_kind ;
+} icalvalue_kind;
 
 #define ICALPROPERTY_FIRST_ENUM 10000
 
@@ -202,6 +219,22 @@ typedef enum icalproperty_method {
     ICAL_METHOD_NONE = 10599
 } icalproperty_method;
 
+typedef enum icalproperty_participanttype {
+    ICAL_PARTICIPANTTYPE_X = 11400,
+    ICAL_PARTICIPANTTYPE_ACTIVE = 11401,
+    ICAL_PARTICIPANTTYPE_INACTIVE = 11402,
+    ICAL_PARTICIPANTTYPE_SPONSOR = 11403,
+    ICAL_PARTICIPANTTYPE_CONTACT = 11404,
+    ICAL_PARTICIPANTTYPE_BOOKINGCONTACT = 11405,
+    ICAL_PARTICIPANTTYPE_EMERGENCYCONTACT = 11406,
+    ICAL_PARTICIPANTTYPE_PUBLICITYCONTACT = 11407,
+    ICAL_PARTICIPANTTYPE_PLANNERCONTACT = 11408,
+    ICAL_PARTICIPANTTYPE_PERFORMER = 11409,
+    ICAL_PARTICIPANTTYPE_SPEAKER = 11410,
+    ICAL_PARTICIPANTTYPE_VOTER = 11411,
+    ICAL_PARTICIPANTTYPE_NONE = 11499
+} icalproperty_participanttype;
+
 typedef enum icalproperty_pollcompletion {
     ICAL_POLLCOMPLETION_X = 10600,
     ICAL_POLLCOMPLETION_SERVER = 10601,
@@ -217,12 +250,30 @@ typedef enum icalproperty_pollmode {
     ICAL_POLLMODE_NONE = 10799
 } icalproperty_pollmode;
 
+typedef enum icalproperty_proximity {
+    ICAL_PROXIMITY_X = 11300,
+    ICAL_PROXIMITY_ARRIVE = 11301,
+    ICAL_PROXIMITY_DEPART = 11302,
+    ICAL_PROXIMITY_CONNECT = 11303,
+    ICAL_PROXIMITY_DISCONNECT = 11304,
+    ICAL_PROXIMITY_NONE = 11399
+} icalproperty_proximity;
+
 typedef enum icalproperty_querylevel {
     ICAL_QUERYLEVEL_X = 10800,
     ICAL_QUERYLEVEL_CALQL1 = 10801,
     ICAL_QUERYLEVEL_CALQLNONE = 10802,
     ICAL_QUERYLEVEL_NONE = 10899
 } icalproperty_querylevel;
+
+typedef enum icalproperty_resourcetype {
+    ICAL_RESOURCETYPE_X = 11500,
+    ICAL_RESOURCETYPE_ROOM = 11501,
+    ICAL_RESOURCETYPE_PROJECTOR = 11502,
+    ICAL_RESOURCETYPE_REMOTECONFERENCEAUDIO = 11503,
+    ICAL_RESOURCETYPE_REMOTECONFERENCEVIDEO = 11504,
+    ICAL_RESOURCETYPE_NONE = 11599
+} icalproperty_resourcetype;
 
 typedef enum icalproperty_status {
     ICAL_STATUS_X = 10900,
@@ -290,7 +341,7 @@ typedef enum icalproperty_xlicclass {
     ICAL_XLICCLASS_NONE = 11199
 } icalproperty_xlicclass;
 
-#define ICALPROPERTY_LAST_ENUM 11300
+#define ICALPROPERTY_LAST_ENUM 11600
 
 /* ACTION */
 LIBICAL_ICAL_EXPORT icalvalue *icalvalue_new_action(enum icalproperty_action v);
@@ -342,6 +393,11 @@ LIBICAL_ICAL_EXPORT icalvalue *icalvalue_new_method(enum icalproperty_method v);
 LIBICAL_ICAL_EXPORT enum icalproperty_method icalvalue_get_method(const icalvalue *value);
 LIBICAL_ICAL_EXPORT void icalvalue_set_method(icalvalue *value, enum icalproperty_method v);
 
+/* PARTICIPANT-TYPE */
+LIBICAL_ICAL_EXPORT icalvalue *icalvalue_new_participanttype(enum icalproperty_participanttype v);
+LIBICAL_ICAL_EXPORT enum icalproperty_participanttype icalvalue_get_participanttype(const icalvalue *value);
+LIBICAL_ICAL_EXPORT void icalvalue_set_participanttype(icalvalue *value, enum icalproperty_participanttype v);
+
 /* PERIOD */
 LIBICAL_ICAL_EXPORT icalvalue *icalvalue_new_period(struct icalperiodtype v);
 LIBICAL_ICAL_EXPORT struct icalperiodtype icalvalue_get_period(const icalvalue *value);
@@ -357,6 +413,11 @@ LIBICAL_ICAL_EXPORT icalvalue *icalvalue_new_pollmode(enum icalproperty_pollmode
 LIBICAL_ICAL_EXPORT enum icalproperty_pollmode icalvalue_get_pollmode(const icalvalue *value);
 LIBICAL_ICAL_EXPORT void icalvalue_set_pollmode(icalvalue *value, enum icalproperty_pollmode v);
 
+/* PROXIMITY */
+LIBICAL_ICAL_EXPORT icalvalue *icalvalue_new_proximity(enum icalproperty_proximity v);
+LIBICAL_ICAL_EXPORT enum icalproperty_proximity icalvalue_get_proximity(const icalvalue *value);
+LIBICAL_ICAL_EXPORT void icalvalue_set_proximity(icalvalue *value, enum icalproperty_proximity v);
+
 /* QUERY */
 LIBICAL_ICAL_EXPORT icalvalue *icalvalue_new_query(const char * v);
 LIBICAL_ICAL_EXPORT const char * icalvalue_get_query(const icalvalue *value);
@@ -367,10 +428,10 @@ LIBICAL_ICAL_EXPORT icalvalue *icalvalue_new_querylevel(enum icalproperty_queryl
 LIBICAL_ICAL_EXPORT enum icalproperty_querylevel icalvalue_get_querylevel(const icalvalue *value);
 LIBICAL_ICAL_EXPORT void icalvalue_set_querylevel(icalvalue *value, enum icalproperty_querylevel v);
 
-/* REQUEST-STATUS */
-LIBICAL_ICAL_EXPORT icalvalue *icalvalue_new_requeststatus(struct icalreqstattype v);
-LIBICAL_ICAL_EXPORT struct icalreqstattype icalvalue_get_requeststatus(const icalvalue *value);
-LIBICAL_ICAL_EXPORT void icalvalue_set_requeststatus(icalvalue *value, struct icalreqstattype v);
+/* RESOURCE-TYPE */
+LIBICAL_ICAL_EXPORT icalvalue *icalvalue_new_resourcetype(enum icalproperty_resourcetype v);
+LIBICAL_ICAL_EXPORT enum icalproperty_resourcetype icalvalue_get_resourcetype(const icalvalue *value);
+LIBICAL_ICAL_EXPORT void icalvalue_set_resourcetype(icalvalue *value, enum icalproperty_resourcetype v);
 
 /* STATUS */
 LIBICAL_ICAL_EXPORT icalvalue *icalvalue_new_status(enum icalproperty_status v);
@@ -397,6 +458,11 @@ LIBICAL_ICAL_EXPORT icalvalue *icalvalue_new_transp(enum icalproperty_transp v);
 LIBICAL_ICAL_EXPORT enum icalproperty_transp icalvalue_get_transp(const icalvalue *value);
 LIBICAL_ICAL_EXPORT void icalvalue_set_transp(icalvalue *value, enum icalproperty_transp v);
 
+/* UID */
+LIBICAL_ICAL_EXPORT icalvalue *icalvalue_new_uid(const char * v);
+LIBICAL_ICAL_EXPORT const char * icalvalue_get_uid(const icalvalue *value);
+LIBICAL_ICAL_EXPORT void icalvalue_set_uid(icalvalue *value, const char * v);
+
 /* URI */
 LIBICAL_ICAL_EXPORT icalvalue *icalvalue_new_uri(const char * v);
 LIBICAL_ICAL_EXPORT const char * icalvalue_get_uri(const icalvalue *value);
@@ -411,6 +477,11 @@ LIBICAL_ICAL_EXPORT void icalvalue_set_utcoffset(icalvalue *value, int v);
 LIBICAL_ICAL_EXPORT icalvalue *icalvalue_new_xlicclass(enum icalproperty_xlicclass v);
 LIBICAL_ICAL_EXPORT enum icalproperty_xlicclass icalvalue_get_xlicclass(const icalvalue *value);
 LIBICAL_ICAL_EXPORT void icalvalue_set_xlicclass(icalvalue *value, enum icalproperty_xlicclass v);
+
+/* XML-REFERENCE */
+LIBICAL_ICAL_EXPORT icalvalue *icalvalue_new_xmlreference(const char * v);
+LIBICAL_ICAL_EXPORT const char * icalvalue_get_xmlreference(const icalvalue *value);
+LIBICAL_ICAL_EXPORT void icalvalue_set_xmlreference(icalvalue *value, const char * v);
 
 LIBICAL_ICAL_EXPORT icalvalue *icalvalue_new_class(enum icalproperty_class v);
 LIBICAL_ICAL_EXPORT enum icalproperty_class icalvalue_get_class(const icalvalue *value);

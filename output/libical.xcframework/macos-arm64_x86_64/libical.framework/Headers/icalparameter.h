@@ -1,26 +1,14 @@
 /*======================================================================
-  FILE: icalparam.h
+  FILE: icalparameter.h
   CREATOR: eric 20 March 1999
 
- (C) COPYRIGHT 2000, Eric Busboom <eric@civicknowledge.com>
-
- This library is free software; you can redistribute it and/or modify
- it under the terms of either:
-
-    The LGPL as published by the Free Software Foundation, version
-    2.1, available at: https://www.gnu.org/licenses/lgpl-2.1.html
-
- Or:
-
-    The Mozilla Public License Version 2.0. You may obtain a copy of
-    the License at https://www.mozilla.org/MPL/
+ SPDX-FileCopyrightText: 2000, Eric Busboom <eric@civicknowledge.com>
+ SPDX-License-Identifier: LGPL-2.1-only OR MPL-2.0
 ======================================================================*/
 
 /**
  * @file icalparameter.h
- *
- * Functions to work with ical parameter objects, which represent
- * parameters to property objects.
+ * @brief Defines the data structure representing iCalendar parameters.
  */
 
 #ifndef ICALPARAMETER_H
@@ -28,6 +16,7 @@
 
 #include "libical_ical_export.h"
 #include "icalderivedparameter.h"
+#include "icalderivedvalue.h"
 
 /* Declared in icalderivedparameter.h */
 /*typedef struct icalparameter_impl icalparameter;*/
@@ -63,11 +52,11 @@ LIBICAL_ICAL_EXPORT icalparameter *icalparameter_new(icalparameter_kind kind);
 
 /**
  * @brief Creates new icalparameter as a clone of the given one.
- * @param p The existing, non-`NULL` parameter to clone.
+ * @param old The existing, non-`NULL` parameter to clone.
  * @return An icalparameter that is a clone of the given one.
  *
  * @par Error handling
- * If @a p is `NULL`, it returns `NULL` and sets ::icalerrno to ::ICAL_BADARG_ERROR.
+ * If @a old is `NULL`, it returns `NULL` and sets ::icalerrno to ::ICAL_BADARG_ERROR.
  * If there was an internal error cloning the data, it returns `NULL`
  * without reporting any error in ::icalerrno.
  *
@@ -81,7 +70,7 @@ LIBICAL_ICAL_EXPORT icalparameter *icalparameter_new(icalparameter_kind kind);
  * icalparameter *param = icalparameter_new_from_string("ROLE=CHAIR");
  *
  * // clone the parameter
- * icalparameter *clone = icalparameter_new_clone(param);
+ * icalparameter *clone = icalparameter_clone(param);
  *
  * if(clone) {
  *     // use clone ...
@@ -91,18 +80,19 @@ LIBICAL_ICAL_EXPORT icalparameter *icalparameter_new(icalparameter_kind kind);
  * icalparameter_free(param);
  * icalparameter_free(clone);
  * ```
+ * @since 4.0
  */
-LIBICAL_ICAL_EXPORT icalparameter *icalparameter_new_clone(icalparameter *p);
+LIBICAL_ICAL_EXPORT icalparameter *icalparameter_clone(const icalparameter *old);
 
 /**
  * @brief Creates new icalparameter object from string
- * @param value The string from which to create the icalparameter, in the form `"PARAMNAME=VALUE"`
+ * @param str The string from which to create the icalparameter, in the form `"PARAMNAME=VALUE"`
  * @return An icalparameter that corresponds to the given string.
  *
  * @par Error handling
  * If there was an internal error copying data, it returns `NULL` and sets
- * ::icalerrno to ::ICAL_NEWFAILED_ERROR. If @a value was `NULL`, it returns
- * `NULL` and sets ::icalerrno to ::ICAL_BADARG_ERROR. If @a value was malformed,
+ * ::icalerrno to ::ICAL_NEWFAILED_ERROR. If @a str was `NULL`, it returns
+ * `NULL` and sets ::icalerrno to ::ICAL_BADARG_ERROR. If @a str was malformed,
  * it returns `NULL` and sets ::icalerrno to ::ICAL_MALFORMEDDATA_ERROR.
  *
  * @par Ownership
@@ -120,7 +110,7 @@ LIBICAL_ICAL_EXPORT icalparameter *icalparameter_new_clone(icalparameter *p);
  * icalparameter_free(param);
  * ```
  */
-LIBICAL_ICAL_EXPORT icalparameter *icalparameter_new_from_string(const char *value);
+LIBICAL_ICAL_EXPORT icalparameter *icalparameter_new_from_string(const char *str);
 
 /**
  * @brief Creates new icalparameter of a given @a kind with a given @a value
@@ -157,9 +147,10 @@ LIBICAL_ICAL_EXPORT icalparameter *icalparameter_new_from_value_string(icalparam
  * @param parameter The icalparameter to free
  *
  * This method needs to be used on all parameter objects returned
- * from any of the `_new()` methods including icalparameter_new(), icalparameter_new_clone(),
- * icalparameter_new_from_string() and icalparameter_new_from_value_string(),
- * when they are not needed anymore and to be released.
+ * from any of the `_new()` methods including icalparameter_new(),
+ * icalparameter_new_from_string() and icalparameter_new_from_value_string()
+ * and on cloned parameter objects returned by icalparameter_clone()
+ * when these object are not needed anymore and to be released.
  *
  * @par Usage
  * ```c
@@ -208,7 +199,7 @@ LIBICAL_ICAL_EXPORT void icalparameter_free(icalparameter *parameter);
 LIBICAL_ICAL_EXPORT char *icalparameter_as_ical_string(icalparameter *parameter);
 
 /**
- * @brief Converts icalparameter into an string representation according to RFC5445/RFC6868.
+ * @brief Converts icalparameter into a string representation according to RFC5445/RFC6868.
  * @param parameter The icalparameter to convert
  * @return A string representing the parameter
  * @sa icalparameter_as_ical_string()
@@ -222,9 +213,9 @@ LIBICAL_ICAL_EXPORT char *icalparameter_as_ical_string(icalparameter *parameter)
  *
  * @par Ownership
  * Strings returned by this method are owned by the caller, thus they need
- * to be manually `free()`d after use. A version of this function which returns
- * strings that do not need to be freed manually is
- * icalparameter_as_ical_string().
+ * to be manually `icalmemory_free_buffer()`d after use.
+ * A version of this function which returns strings that do not
+ * need to be freed manually is icalparameter_as_ical_string().
  *
  * @par Usage
  * ```c
@@ -233,7 +224,7 @@ LIBICAL_ICAL_EXPORT char *icalparameter_as_ical_string(icalparameter *parameter)
  * if(param) {
  *     char *str = icalparameter_as_ical_string(param);
  *     printf("%s\n", str);
- *     free(str);
+ *     icalmemory_free_buffer(str);
  * }
  *
  * icalparameter_free(param);
@@ -262,12 +253,12 @@ LIBICAL_ICAL_EXPORT char *icalparameter_as_ical_string_r(icalparameter *paramete
  * icalparameter_free(param);
  * @endcode
  */
-LIBICAL_ICAL_EXPORT icalparameter_kind icalparameter_isa(icalparameter *parameter);
+LIBICAL_ICAL_EXPORT icalparameter_kind icalparameter_isa(const icalparameter *parameter);
 
 /**
  * Determines if the given param is an icalparameter
  * @param param The libical-originated object to check
- * @return 1 if the object is an icalparameter, 0 otherwise.
+ * @return true if the object is an icalparameter, false otherwise.
  * @note This function expects to be given an object originating from
  *  libical - if this function is passed anything that is not from
  *  libical, its behavior is undefined.
@@ -287,7 +278,7 @@ LIBICAL_ICAL_EXPORT icalparameter_kind icalparameter_isa(icalparameter *paramete
  * icalparameter_free(param);
  * ```
  */
-LIBICAL_ICAL_EXPORT int icalparameter_isa_parameter(void *param);
+LIBICAL_ICAL_EXPORT bool icalparameter_isa_parameter(void *param);
 
 /* Access the name of an X parameter */
 
@@ -349,7 +340,7 @@ LIBICAL_ICAL_EXPORT void icalparameter_set_xname(icalparameter *param, const cha
  * icalparameter_free(param);
  * ```
  */
-LIBICAL_ICAL_EXPORT const char *icalparameter_get_xname(icalparameter *param);
+LIBICAL_ICAL_EXPORT const char *icalparameter_get_xname(const icalparameter *param);
 
 /**
  * @brief Sets the X-value of @a param to @a v
@@ -411,7 +402,7 @@ LIBICAL_ICAL_EXPORT void icalparameter_set_xvalue(icalparameter *param, const ch
  * icalparameter_free(param);
  * ```
  */
-LIBICAL_ICAL_EXPORT const char *icalparameter_get_xvalue(icalparameter *param);
+LIBICAL_ICAL_EXPORT const char *icalparameter_get_xvalue(const icalparameter *param);
 
 /* Access the name of an IANA parameter */
 
@@ -473,7 +464,7 @@ LIBICAL_ICAL_EXPORT void icalparameter_set_iana_name(icalparameter *param, const
  * icalparameter_free(param);
  * ```
  */
-LIBICAL_ICAL_EXPORT const char *icalparameter_get_iana_name(icalparameter *param);
+LIBICAL_ICAL_EXPORT const char *icalparameter_get_iana_name(const icalparameter *param);
 
 /**
  * @brief Sets the IANA value of @a param to @a v
@@ -535,13 +526,13 @@ LIBICAL_ICAL_EXPORT void icalparameter_set_iana_value(icalparameter *param, cons
  * icalparameter_free(param);
  * ```
  */
-LIBICAL_ICAL_EXPORT const char *icalparameter_get_iana_value(icalparameter *param);
+LIBICAL_ICAL_EXPORT const char *icalparameter_get_iana_value(const icalparameter *param);
 
 /**
  * @brief Determines if two parameters have the same name
  * @param param1 First parameter to compare
  * @param param2 Second parameter to compare
- * @return 1 if they have the same name, 0 otherwise.
+ * @return true if they have the same name, false otherwise.
  *
  * @par Error handling
  * If either of @a param1 or @a param2 are `NULL`, it returns 0 and sets
@@ -564,7 +555,7 @@ LIBICAL_ICAL_EXPORT const char *icalparameter_get_iana_value(icalparameter *para
  * icalparameter_free(param2);
  * ```
  */
-LIBICAL_ICAL_EXPORT int icalparameter_has_same_name(icalparameter *param1, icalparameter *param2);
+LIBICAL_ICAL_EXPORT bool icalparameter_has_same_name(const icalparameter *param1, const icalparameter *param2);
 
 /* Convert enumerations */
 
@@ -613,9 +604,9 @@ LIBICAL_ICAL_EXPORT const char *icalparameter_kind_to_string(icalparameter_kind 
 LIBICAL_ICAL_EXPORT icalparameter_kind icalparameter_string_to_kind(const char *string);
 
 /**
- * @brief Checks the validity of a icalparameter_kind
+ * @brief Checks the validity of an icalparameter_kind
  * @param kind The icalparameter_kind
- * @return 1 if @a kind is valid, 0 otherwise
+ * @return true if @a kind is valid, false otherwise
  *
  * @par Usage
  * ```c
@@ -623,6 +614,43 @@ LIBICAL_ICAL_EXPORT icalparameter_kind icalparameter_string_to_kind(const char *
  * ```
  * @since 3.0.4
  */
-LIBICAL_ICAL_EXPORT int icalparameter_kind_is_valid(const icalparameter_kind kind);
+LIBICAL_ICAL_EXPORT bool icalparameter_kind_is_valid(const icalparameter_kind kind);
+
+/**
+ * Gets the icalvalue_kind of a icalparameter_kind.
+ *
+ * @param kind the parameter_kind
+ * @param is_multivalued an address pointing to integer that will contain a value
+ *        of one if the @p kind is a multi-value; a value of zero otherwise.
+ *
+ * @return the icalvalue_kind of the specified icalparameter_kind. Additionally,
+ * @p is_mulitivalued will indicate if the value_kind is multi-valued.
+ *
+ * @since 4.0
+ */
+LIBICAL_ICAL_EXPORT icalvalue_kind icalparameter_kind_value_kind(const icalparameter_kind kind, int *is_multivalued);
+
+/**
+ * Return if the specified parameter is multivalued.
+ *
+ * @param param is a pointer to the icalparameter.
+ *
+ * @return true if the specified parameter is multivalued; false otherwise.
+ *
+ * @since 4.0
+ */
+LIBICAL_ICAL_EXPORT bool icalparameter_is_multivalued(const icalparameter *param);
+
+/**
+ * Decode the specified char string as a parameter value per RFC6868.
+ *
+ * @param value is a pointer to the char string to decode.
+ *
+ * @p value will contain the decoded value on return.
+ * No error checking is performed.
+ *
+ * @since 4.0
+ */
+LIBICAL_ICAL_EXPORT void icalparameter_decode_value(char *value);
 
 #endif

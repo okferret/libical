@@ -1,6 +1,9 @@
-#import <Foundation/Foundation.h>
+#ifndef LIBICAL_UMBRELLA_H
+#define LIBICAL_UMBRELLA_H
 
-FOUNDATION_EXPORT double libicalVersionNumber;
-FOUNDATION_EXPORT const unsigned char libicalVersionString[];
+#include "ical.h"
+#include "icalss.h"
+#include "icalvcal.h"
+#include "vcard.h"
 
-#import "libical/ical.h"
+#endif /* LIBICAL_UMBRELLA_H */

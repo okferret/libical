@@ -1,26 +1,24 @@
 /*======================================================================
- FILE: icalparam.h
+ FILE: icalderivedparameter.h
  CREATOR: eric 20 March 1999
 
- (C) COPYRIGHT 2000, Eric Busboom <eric@civicknowledge.com>
-
- This library is free software; you can redistribute it and/or modify
- it under the terms of either:
-
-    The LGPL as published by the Free Software Foundation, version
-    2.1, available at: https://www.gnu.org/licenses/lgpl-2.1.html
-
- Or:
-
-    The Mozilla Public License Version 2.0. You may obtain a copy of
-    the License at https://www.mozilla.org/MPL/
-
-  The original code is icalparam.h
+ SPDX-FileCopyrightText: 2000, Eric Busboom <eric@civicknowledge.com>
+ SPDX-License-Identifier: LGPL-2.1-only OR MPL-2.0
 ======================================================================*/
 #ifndef ICALDERIVEDPARAMETER_H
 #define ICALDERIVEDPARAMETER_H
 
+/**
+ * @file icalderivedparameter.h
+ * @brief ICalendar parameters.
+ */
+
 #include "libical_ical_export.h"
+#include "icalduration.h"
+#include "icalenumarray.h"
+#include "icalstrarray.h"
+
+#include <stdbool.h>
 
 typedef struct icalparameter_impl icalparameter;
 
@@ -38,6 +36,7 @@ typedef enum icalparameter_kind {
     ICAL_CUTYPE_PARAMETER = 5,
     ICAL_DELEGATEDFROM_PARAMETER = 6,
     ICAL_DELEGATEDTO_PARAMETER = 7,
+    ICAL_DERIVED_PARAMETER = 54,
     ICAL_DIR_PARAMETER = 8,
     ICAL_DISPLAY_PARAMETER = 46,
     ICAL_EMAIL_PARAMETER = 50,
@@ -47,22 +46,25 @@ typedef enum icalparameter_kind {
     ICAL_FEATURE_PARAMETER = 48,
     ICAL_FILENAME_PARAMETER = 42,
     ICAL_FMTTYPE_PARAMETER = 12,
+    ICAL_GAP_PARAMETER = 55,
     ICAL_IANA_PARAMETER = 33,
     ICAL_ID_PARAMETER = 13,
     ICAL_LABEL_PARAMETER = 49,
     ICAL_LANGUAGE_PARAMETER = 14,
     ICAL_LATENCY_PARAMETER = 15,
+    ICAL_LINKREL_PARAMETER = 56,
     ICAL_LOCAL_PARAMETER = 16,
     ICAL_LOCALIZE_PARAMETER = 17,
     ICAL_MANAGEDID_PARAMETER = 40,
     ICAL_MEMBER_PARAMETER = 18,
     ICAL_MODIFIED_PARAMETER = 44,
     ICAL_OPTIONS_PARAMETER = 19,
+    ICAL_ORDER_PARAMETER = 52,
     ICAL_PARTSTAT_PARAMETER = 20,
     ICAL_PATCHACTION_PARAMETER = 51,
     ICAL_PUBLICCOMMENT_PARAMETER = 37,
     ICAL_RANGE_PARAMETER = 21,
-    ICAL_REASON_PARAMETER = 43,
+    ICAL_REASON_PARAMETER = 47,
     ICAL_RELATED_PARAMETER = 22,
     ICAL_RELTYPE_PARAMETER = 23,
     ICAL_REQUIRED_PARAMETER = 43,
@@ -72,6 +74,7 @@ typedef enum icalparameter_kind {
     ICAL_SCHEDULEAGENT_PARAMETER = 34,
     ICAL_SCHEDULEFORCESEND_PARAMETER = 35,
     ICAL_SCHEDULESTATUS_PARAMETER = 36,
+    ICAL_SCHEMA_PARAMETER = 53,
     ICAL_SENTBY_PARAMETER = 26,
     ICAL_SIZE_PARAMETER = 41,
     ICAL_STAYINFORMED_PARAMETER = 39,
@@ -102,6 +105,13 @@ typedef enum icalparameter_cutype {
     ICAL_CUTYPE_UNKNOWN = 20105,
     ICAL_CUTYPE_NONE = 20199
 } icalparameter_cutype;
+
+typedef enum icalparameter_derived {
+    ICAL_DERIVED_X = 22300,
+    ICAL_DERIVED_TRUE = 22301,
+    ICAL_DERIVED_FALSE = 22302,
+    ICAL_DERIVED_NONE = 22399
+} icalparameter_derived;
 
 typedef enum icalparameter_display {
     ICAL_DISPLAY_X = 22000,
@@ -196,6 +206,16 @@ typedef enum icalparameter_reltype {
     ICAL_RELTYPE_CHILD = 20902,
     ICAL_RELTYPE_SIBLING = 20903,
     ICAL_RELTYPE_POLL = 20904,
+    ICAL_RELTYPE_SNOOZE = 20905,
+    ICAL_RELTYPE_CONCEPT = 20906,
+    ICAL_RELTYPE_DEPENDSON = 20907,
+    ICAL_RELTYPE_FINISHTOFINISH = 20908,
+    ICAL_RELTYPE_FINISHTOSTART = 20909,
+    ICAL_RELTYPE_FIRST = 20910,
+    ICAL_RELTYPE_NEXT = 20911,
+    ICAL_RELTYPE_REFID = 20912,
+    ICAL_RELTYPE_STARTTOFINISH = 20913,
+    ICAL_RELTYPE_STARTTOSTART = 20914,
     ICAL_RELTYPE_NONE = 20999
 } icalparameter_reltype;
 
@@ -267,6 +287,8 @@ typedef enum icalparameter_value {
     ICAL_VALUE_DATETIME = 21612,
     ICAL_VALUE_UTCOFFSET = 21613,
     ICAL_VALUE_CALADDRESS = 21614,
+    ICAL_VALUE_UID = 21615,
+    ICAL_VALUE_XMLREFERENCE = 21616,
     ICAL_VALUE_NONE = 21699
 } icalparameter_value;
 
@@ -298,7 +320,8 @@ typedef enum icalparameter_xlicerrortype {
     ICAL_XLICERRORTYPE_NONE = 21899
 } icalparameter_xlicerrortype;
 
-#define ICALPARAMETER_LAST_ENUM 22300
+#define ICALPARAMETER_LAST_ENUM 22400
+
 
 /* ACTIONPARAM */
 LIBICAL_ICAL_EXPORT icalparameter * icalparameter_new_actionparam(icalparameter_action v);
@@ -326,14 +349,29 @@ LIBICAL_ICAL_EXPORT icalparameter_cutype icalparameter_get_cutype(const icalpara
 LIBICAL_ICAL_EXPORT void icalparameter_set_cutype(icalparameter *value, icalparameter_cutype v);
 
 /* DELEGATED-FROM */
+LIBICAL_ICAL_EXPORT icalparameter * icalparameter_new_delegatedfrom_list(icalstrarray * v);
+LIBICAL_ICAL_EXPORT icalstrarray * icalparameter_get_delegatedfrom(const icalparameter *value);
+LIBICAL_ICAL_EXPORT void icalparameter_set_delegatedfrom(icalparameter *value, icalstrarray * v);
 LIBICAL_ICAL_EXPORT icalparameter * icalparameter_new_delegatedfrom(const char * v);
-LIBICAL_ICAL_EXPORT const char * icalparameter_get_delegatedfrom(const icalparameter *value);
-LIBICAL_ICAL_EXPORT void icalparameter_set_delegatedfrom(icalparameter *value, const char * v);
+LIBICAL_ICAL_EXPORT size_t icalparameter_get_delegatedfrom_size(icalparameter *param);
+LIBICAL_ICAL_EXPORT const char * icalparameter_get_delegatedfrom_nth(icalparameter *param, size_t position);
+LIBICAL_ICAL_EXPORT void icalparameter_add_delegatedfrom(icalparameter *value, const char * v);
+LIBICAL_ICAL_EXPORT void icalparameter_remove_delegatedfrom(icalparameter *value, const char * v);
 
 /* DELEGATED-TO */
+LIBICAL_ICAL_EXPORT icalparameter * icalparameter_new_delegatedto_list(icalstrarray * v);
+LIBICAL_ICAL_EXPORT icalstrarray * icalparameter_get_delegatedto(const icalparameter *value);
+LIBICAL_ICAL_EXPORT void icalparameter_set_delegatedto(icalparameter *value, icalstrarray * v);
 LIBICAL_ICAL_EXPORT icalparameter * icalparameter_new_delegatedto(const char * v);
-LIBICAL_ICAL_EXPORT const char * icalparameter_get_delegatedto(const icalparameter *value);
-LIBICAL_ICAL_EXPORT void icalparameter_set_delegatedto(icalparameter *value, const char * v);
+LIBICAL_ICAL_EXPORT size_t icalparameter_get_delegatedto_size(icalparameter *param);
+LIBICAL_ICAL_EXPORT const char * icalparameter_get_delegatedto_nth(icalparameter *param, size_t position);
+LIBICAL_ICAL_EXPORT void icalparameter_add_delegatedto(icalparameter *value, const char * v);
+LIBICAL_ICAL_EXPORT void icalparameter_remove_delegatedto(icalparameter *value, const char * v);
+
+/* DERIVED */
+LIBICAL_ICAL_EXPORT icalparameter * icalparameter_new_derived(icalparameter_derived v);
+LIBICAL_ICAL_EXPORT icalparameter_derived icalparameter_get_derived(const icalparameter *value);
+LIBICAL_ICAL_EXPORT void icalparameter_set_derived(icalparameter *value, icalparameter_derived v);
 
 /* DIR */
 LIBICAL_ICAL_EXPORT icalparameter * icalparameter_new_dir(const char * v);
@@ -341,9 +379,14 @@ LIBICAL_ICAL_EXPORT const char * icalparameter_get_dir(const icalparameter *valu
 LIBICAL_ICAL_EXPORT void icalparameter_set_dir(icalparameter *value, const char * v);
 
 /* DISPLAY */
+LIBICAL_ICAL_EXPORT icalparameter * icalparameter_new_display_list(icalenumarray * v);
+LIBICAL_ICAL_EXPORT icalenumarray * icalparameter_get_display(const icalparameter *value);
+LIBICAL_ICAL_EXPORT void icalparameter_set_display(icalparameter *value, icalenumarray * v);
 LIBICAL_ICAL_EXPORT icalparameter * icalparameter_new_display(icalparameter_display v);
-LIBICAL_ICAL_EXPORT icalparameter_display icalparameter_get_display(const icalparameter *value);
-LIBICAL_ICAL_EXPORT void icalparameter_set_display(icalparameter *value, icalparameter_display v);
+LIBICAL_ICAL_EXPORT size_t icalparameter_get_display_size(icalparameter *param);
+LIBICAL_ICAL_EXPORT icalparameter_display icalparameter_get_display_nth(icalparameter *param, size_t position);
+LIBICAL_ICAL_EXPORT void icalparameter_add_display(icalparameter *value, icalenumarray_element * v);
+LIBICAL_ICAL_EXPORT void icalparameter_remove_display(icalparameter *value, icalenumarray_element * v);
 
 /* EMAIL */
 LIBICAL_ICAL_EXPORT icalparameter * icalparameter_new_email(const char * v);
@@ -366,9 +409,14 @@ LIBICAL_ICAL_EXPORT icalparameter_fbtype icalparameter_get_fbtype(const icalpara
 LIBICAL_ICAL_EXPORT void icalparameter_set_fbtype(icalparameter *value, icalparameter_fbtype v);
 
 /* FEATURE */
+LIBICAL_ICAL_EXPORT icalparameter * icalparameter_new_feature_list(icalenumarray * v);
+LIBICAL_ICAL_EXPORT icalenumarray * icalparameter_get_feature(const icalparameter *value);
+LIBICAL_ICAL_EXPORT void icalparameter_set_feature(icalparameter *value, icalenumarray * v);
 LIBICAL_ICAL_EXPORT icalparameter * icalparameter_new_feature(icalparameter_feature v);
-LIBICAL_ICAL_EXPORT icalparameter_feature icalparameter_get_feature(const icalparameter *value);
-LIBICAL_ICAL_EXPORT void icalparameter_set_feature(icalparameter *value, icalparameter_feature v);
+LIBICAL_ICAL_EXPORT size_t icalparameter_get_feature_size(icalparameter *param);
+LIBICAL_ICAL_EXPORT icalparameter_feature icalparameter_get_feature_nth(icalparameter *param, size_t position);
+LIBICAL_ICAL_EXPORT void icalparameter_add_feature(icalparameter *value, icalenumarray_element * v);
+LIBICAL_ICAL_EXPORT void icalparameter_remove_feature(icalparameter *value, icalenumarray_element * v);
 
 /* FILENAME */
 LIBICAL_ICAL_EXPORT icalparameter * icalparameter_new_filename(const char * v);
@@ -379,6 +427,11 @@ LIBICAL_ICAL_EXPORT void icalparameter_set_filename(icalparameter *value, const 
 LIBICAL_ICAL_EXPORT icalparameter * icalparameter_new_fmttype(const char * v);
 LIBICAL_ICAL_EXPORT const char * icalparameter_get_fmttype(const icalparameter *value);
 LIBICAL_ICAL_EXPORT void icalparameter_set_fmttype(icalparameter *value, const char * v);
+
+/* GAP */
+LIBICAL_ICAL_EXPORT icalparameter * icalparameter_new_gap(struct icaldurationtype v);
+LIBICAL_ICAL_EXPORT struct icaldurationtype icalparameter_get_gap(const icalparameter *value);
+LIBICAL_ICAL_EXPORT void icalparameter_set_gap(icalparameter *value, struct icaldurationtype v);
 
 /* IANA */
 LIBICAL_ICAL_EXPORT icalparameter * icalparameter_new_iana(const char * v);
@@ -405,6 +458,11 @@ LIBICAL_ICAL_EXPORT icalparameter * icalparameter_new_latency(const char * v);
 LIBICAL_ICAL_EXPORT const char * icalparameter_get_latency(const icalparameter *value);
 LIBICAL_ICAL_EXPORT void icalparameter_set_latency(icalparameter *value, const char * v);
 
+/* LINKREL */
+LIBICAL_ICAL_EXPORT icalparameter * icalparameter_new_linkrel(const char * v);
+LIBICAL_ICAL_EXPORT const char * icalparameter_get_linkrel(const icalparameter *value);
+LIBICAL_ICAL_EXPORT void icalparameter_set_linkrel(icalparameter *value, const char * v);
+
 /* LOCAL */
 LIBICAL_ICAL_EXPORT icalparameter * icalparameter_new_local(icalparameter_local v);
 LIBICAL_ICAL_EXPORT icalparameter_local icalparameter_get_local(const icalparameter *value);
@@ -421,9 +479,14 @@ LIBICAL_ICAL_EXPORT const char * icalparameter_get_managedid(const icalparameter
 LIBICAL_ICAL_EXPORT void icalparameter_set_managedid(icalparameter *value, const char * v);
 
 /* MEMBER */
+LIBICAL_ICAL_EXPORT icalparameter * icalparameter_new_member_list(icalstrarray * v);
+LIBICAL_ICAL_EXPORT icalstrarray * icalparameter_get_member(const icalparameter *value);
+LIBICAL_ICAL_EXPORT void icalparameter_set_member(icalparameter *value, icalstrarray * v);
 LIBICAL_ICAL_EXPORT icalparameter * icalparameter_new_member(const char * v);
-LIBICAL_ICAL_EXPORT const char * icalparameter_get_member(const icalparameter *value);
-LIBICAL_ICAL_EXPORT void icalparameter_set_member(icalparameter *value, const char * v);
+LIBICAL_ICAL_EXPORT size_t icalparameter_get_member_size(icalparameter *param);
+LIBICAL_ICAL_EXPORT const char * icalparameter_get_member_nth(icalparameter *param, size_t position);
+LIBICAL_ICAL_EXPORT void icalparameter_add_member(icalparameter *value, const char * v);
+LIBICAL_ICAL_EXPORT void icalparameter_remove_member(icalparameter *value, const char * v);
 
 /* MODIFIED */
 LIBICAL_ICAL_EXPORT icalparameter * icalparameter_new_modified(const char * v);
@@ -434,6 +497,11 @@ LIBICAL_ICAL_EXPORT void icalparameter_set_modified(icalparameter *value, const 
 LIBICAL_ICAL_EXPORT icalparameter * icalparameter_new_options(const char * v);
 LIBICAL_ICAL_EXPORT const char * icalparameter_get_options(const icalparameter *value);
 LIBICAL_ICAL_EXPORT void icalparameter_set_options(icalparameter *value, const char * v);
+
+/* ORDER */
+LIBICAL_ICAL_EXPORT icalparameter * icalparameter_new_order(int v);
+LIBICAL_ICAL_EXPORT int icalparameter_get_order(const icalparameter *value);
+LIBICAL_ICAL_EXPORT void icalparameter_set_order(icalparameter *value, int v);
 
 /* PARTSTAT */
 LIBICAL_ICAL_EXPORT icalparameter * icalparameter_new_partstat(icalparameter_partstat v);
@@ -505,6 +573,11 @@ LIBICAL_ICAL_EXPORT icalparameter * icalparameter_new_schedulestatus(const char 
 LIBICAL_ICAL_EXPORT const char * icalparameter_get_schedulestatus(const icalparameter *value);
 LIBICAL_ICAL_EXPORT void icalparameter_set_schedulestatus(icalparameter *value, const char * v);
 
+/* SCHEMA */
+LIBICAL_ICAL_EXPORT icalparameter * icalparameter_new_schema(const char * v);
+LIBICAL_ICAL_EXPORT const char * icalparameter_get_schema(const icalparameter *value);
+LIBICAL_ICAL_EXPORT void icalparameter_set_schema(icalparameter *value, const char * v);
+
 /* SENT-BY */
 LIBICAL_ICAL_EXPORT icalparameter * icalparameter_new_sentby(const char * v);
 LIBICAL_ICAL_EXPORT const char * icalparameter_get_sentby(const icalparameter *value);
@@ -549,7 +622,6 @@ LIBICAL_ICAL_EXPORT void icalparameter_set_xliccomparetype(icalparameter *value,
 LIBICAL_ICAL_EXPORT icalparameter * icalparameter_new_xlicerrortype(icalparameter_xlicerrortype v);
 LIBICAL_ICAL_EXPORT icalparameter_xlicerrortype icalparameter_get_xlicerrortype(const icalparameter *value);
 LIBICAL_ICAL_EXPORT void icalparameter_set_xlicerrortype(icalparameter *value, icalparameter_xlicerrortype v);
-
 #endif /*ICALPARAMETER_H*/
 
 /* END   of section of machine generated code (mkderivedparameters.pl). Do not edit. */

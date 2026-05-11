@@ -5,18 +5,24 @@ import PackageDescription
 
 let package = Package(
     name: "libical",
-    platforms: [.iOS(.v13), .macOS(.v10_15)],
+    platforms: [
+        .iOS(.v13),
+        .macOS(.v10_15),
+        .tvOS(.v13),
+        .watchOS(.v6),
+    ],
     products: [
-        // Products define the executables and libraries a package produces, making them visible to other packages.
         .library(
             name: "libical",
-            targets: ["libical"]),
+            targets: ["libical"]
+        ),
     ],
     targets: [
-        // Targets are the basic building blocks of a package, defining a module or a test suite.
-        // Targets can depend on other targets in this package and products from dependencies.
-        .binaryTarget(name: "libical",
-                      path: "./output/libical.xcframework"),
+        // libical XCFramework（由 build_libical_xcframework.sh 构建生成）
+        .binaryTarget(
+            name: "libical",
+            path: "./output/libical.xcframework"
+        ),
         .testTarget(
             name: "libicalTests",
             dependencies: ["libical"]

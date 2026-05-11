@@ -1,3 +1,8 @@
+/*
+  SPDX-FileCopyrightText: Allen Winter <winter@kde.org>
+  SPDX-License-Identifier: LGPL-2.1-only OR MPL-2.0
+*/
+
 #ifndef LIBICAL_ICAL_EXPORT_H
 #define LIBICAL_ICAL_EXPORT_H
 
@@ -9,10 +14,10 @@
 #else
 #if defined(_MSC_VER) || defined(__CYGWIN__) || defined(__MINGW32__)
 #if defined(libical_ical_EXPORTS)
-       /* We are building this library */
+/* We are building this library */
 #define LIBICAL_ICAL_EXPORT __declspec(dllexport)
 #else
-       /* We are using this library */
+/* We are using this library */
 #define LIBICAL_ICAL_EXPORT __declspec(dllimport)
 #endif
 #define LIBICAL_ICAL_NO_EXPORT
