@@ -12,20 +12,31 @@ let package = Package(
         .watchOS(.v6),
     ],
     products: [
+        // libICAL Swift 封装层（对外唯一暴露的产品）
         .library(
-            name: "libical",
-            targets: ["libical"]
+            name: "libICAL",
+            targets: ["libICAL"]
         ),
     ],
     targets: [
-        // libical XCFramework（由 build_libical_xcframework.sh 构建生成）
+        // libical XCFramework（由 build_libical_apple_all_xcframework.sh 构建生成）
         .binaryTarget(
             name: "libical",
-            path: "./output/libical.xcframework"
+            path: "./libical-apple-build/libical.xcframework"
+        ),
+        // libICAL Swift 封装层
+        .target(
+            name: "libICAL",
+            dependencies: ["libical"],
+            path: "Sources/libICAL",
+            swiftSettings: [
+                .swiftLanguageMode(.v5)
+            ]
         ),
         .testTarget(
             name: "libicalTests",
-            dependencies: ["libical"]
+            dependencies: ["libICAL"],
+            path: "Tests/libicalTests"
         ),
     ]
 )

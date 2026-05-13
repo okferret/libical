@@ -1,0 +1,5 @@
+module libical {
+    header "libical/ical.h"
+
+    export *
+}
